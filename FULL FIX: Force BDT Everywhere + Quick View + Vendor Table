@@ -1,0 +1,108 @@
+console.log(
+    "%cThis site’s currency system is customized by Yasin Arafat 💻 contact: yasinarafatdev@gmail.com",
+    "color: green; font-size: 14px;"
+);
+
+
+
+// IIFE with jQuery Wrapper
+(function ($) {
+    'use strict';
+    
+    $(window).on('load', function () {
+        $('.preloader').delay(1000).fadeOut(600);
+    });
+
+    // Accordion mobile menu
+    var initMobileMenu = function() {
+        $( '#bmmenu li.has-sub' ).append( '<span class="holder"></span>' );
+        $( 'body' ).on('click','.holder',function() {
+            var el = $( this ).closest( 'li' );
+            if ( el.hasClass( 'open' ) ) {
+                el.removeClass( 'open' );
+                el.find( 'li' ).removeClass( 'open' );
+                el.find( 'ul' ).slideUp();
+            } else {
+                el.addClass( 'open' );
+                el.children( 'ul' ).slideDown();
+                el.siblings( 'li' ).children( 'ul' ).slideUp();
+                el.siblings( 'li' ).removeClass( 'open' );
+                el.siblings( 'li' ).find( 'li' ).removeClass( 'open' );
+                el.siblings( 'li' ).find( 'ul' ).slideUp();
+            }
+        });
+    }
+	
+/*
+ * Currency system customized by Yasin Arafat
+ * contact: yasinarafatdev@gmail.com
+ */
+
+    // currency formating
+    function formatMoney(amount, decimalCount = 2, decimal = ".", separator = ",") {
+ 
+        decimalCount = Math.abs(decimalCount);
+        decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+
+        const negativeSign = amount < 0 ? "-" : "";
+
+        let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+        let j = (i.length > 3) ? i.length % 3 : 0;
+
+        return negativeSign + (j ? i.substr(0, j) + separator : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + separator) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
+
+    };
+
+
+	
+/* --------- FULL FIX: Force BDT Everywhere + Quick View + Vendor Table -------- */
+$(document).ready(function () {
+
+    function setBDTCurrency() {
+        var symbol = '৳';
+        var currency = 'BDT';
+
+        // Remove currency dropdown
+        $('#blurb_curency_list').remove();
+
+        // Set main BDT UI
+        $(".blurb_curency_select").text(currency);
+        $('.blurb-currency-symbol').text(symbol);
+        $('.blurb-currency-key').text(currency);
+
+        // Remove old currency cookie
+        Cookies.remove('blurb_currency', { path: '' });
+
+        // FIX: Replace all Dollar signs in Vendor Table & Quick View
+        $('.blurb-vendor-price, .store-price, .vendor-price, .price, .woocommerce-Price-currencySymbol, .woocommerce-Price-amount, .amount')
+            .each(function () {
+
+                let text = $(this).text();
+
+                // Replace AED, $, €, £, د.إ anything
+                text = text.replace(/[$AED€£د٫إ]/g, '');
+
+                // Remove unwanted chars
+                let clean = text.replace(/[^\d.-]/g, '');
+                let amount = parseFloat(clean);
+
+                if (!isNaN(amount)) {
+                    $(this).text(symbol + " " + amount.toLocaleString());
+                }
+            });
+    }
+
+    // Run on page load
+    setBDTCurrency();
+
+    // Run again when Quick View loads (Ajax)
+    $(document).on("ajaxComplete ajaxSuccess wc_fragments_loaded wc_fragments_refreshed", function () {
+        setTimeout(setBDTCurrency, 100);
+    });
+
+});
+
+
+/*
+ * Currency system customized by Yasin Arafat
+ */
